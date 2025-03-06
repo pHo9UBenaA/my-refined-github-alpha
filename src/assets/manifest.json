@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "pHo9UBenaA Refined GitHub",
+  "short_name": "pHo9UBenaA Refined GitHub",
+  "version": "0.1.0",
+  "description": "Simplifies the GitHub interface and adds useful features",
+  "author": "pHo9UBenaA",
+  "action": {
+    "default_icon": "icon.png"
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "commands": {
+    "focus_search": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F"
+      },
+      "description": "Focus on the search box of the current GitHub page"
+    }
+  },
+  "permissions": ["activeTab", "scripting", "tabs"],
+  "host_permissions": ["*://github.com/*", "*://www.github.com/*"],
+  "incognito": "spanning"
+}
