@@ -24,22 +24,22 @@ const focus = (urlString: string): void => {
     {
       // <author>/<repository>/projects
       matcher: (url) => url.pathname.endsWith("/projects"),
-      id: 'project-search-input'
+      id: "project-search-input",
     },
     {
       // <author>?tab=repositories
       matcher: (url) => url.searchParams.get("tab") === "repositories",
-      id: 'your-repos-filter'
+      id: "your-repos-filter",
     },
     {
       // <author>?tab=projects
       matcher: (url) => url.searchParams.get("tab") === "projects",
-      id: 'project-search-input'
+      id: "project-search-input",
     },
     {
       // <author>?tab=stars
       matcher: (url) => url.searchParams.get("tab") === "stars",
-      id: 'q'
+      id: "q",
     },
   ];
 
@@ -77,4 +77,4 @@ const focusSearchBox = async (): Promise<void> => {
   });
 };
 
-export { focusSearchBox, focus as __test__focus };
+export { focus as __test__focus, focusSearchBox };
