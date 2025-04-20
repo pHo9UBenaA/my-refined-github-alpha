@@ -1,4 +1,4 @@
-/// <reference types="npm:@types/chrome" />
+/// <reference types="@types/chrome" />
 
 import { focusSearchBox } from "./features/focusSearchBox.ts";
 

@@ -44,7 +44,8 @@ const focus = (urlString: string): void => {
   const searchBox = document.getElementById(searchBoxId);
   searchBox?.focus();
 };
-export const focusSearchBox = async (): Promise<void> => {
+
+const focusSearchBox = async (): Promise<void> => {
   const [tab] = await chrome.tabs.query({
     active: true,
     currentWindow: true,
@@ -61,3 +62,4 @@ export const focusSearchBox = async (): Promise<void> => {
   });
 };
 
+export { focusSearchBox, focus as __test__focus };
