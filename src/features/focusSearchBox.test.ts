@@ -83,7 +83,24 @@ describe("focus function", () => {
     });
   });
 
-  describe("動作しないUパターン", () => {
+  describe("<author>?params", () => {
+    it("repositories tabで正しいIDの要素にフォーカスする", () => {
+      focus("https://github.com/user?tab=repositories");
+      assertOnlyElementFocused(ElementIds.authorRepositories);
+    });
+
+    it("projects tabで正しいIDの要素にフォーカスする", () => {
+      focus("https://github.com/user?tab=projects");
+      assertOnlyElementFocused(ElementIds.authorProjects);
+    });
+
+    it("stars tabで正しいIDの要素にフォーカスする", () => {
+      focus("https://github.com/user?tab=stars");
+      assertOnlyElementFocused(ElementIds.authorStars);
+    });
+  });
+
+  describe("動作しないURLパターン", () => {
     it("不正なURLの場合", () => {
       focus("https://github.com/invalid/path");
       assertOnlyElementFocused(null);
