@@ -1,3 +1,49 @@
+/// <reference types="@types/chrome" />
+
+// 値を参照してしまうと`not defined`になってしまうため取り急ぎ型情報のみ
+import { type ElementIds } from "../constants/focusSearchBox.ts";
+
+type SearchBoxIdPattern = {
+  matcher: (url: URL) => boolean;
+  id: (typeof ElementIds)[keyof typeof ElementIds];
+};
+
+const focus = (urlString: string): void => {
+  // MEMO: スコープ外で定義すると`not defined`になってしまう
+  const searchBoxIdPattern: SearchBoxIdPattern[] = [
+    {
+      // <author>/<repository>/issues
+      matcher: (url) => url.pathname.endsWith("/issues"),
+      id: "repository-input",
+    },
+    {
+      // <author>/<repository>/pulls
+      matcher: (url) => url.pathname.endsWith("/pulls"),
+      id: "js-issues-search",
+    },
+    {
+      // <author>/<repository>/projects
+      matcher: (url) => url.pathname.endsWith("/projects"),
+      id: "project-search-input",
+    },
+  ];
+
+  // MEMO: スコープ外で定義すると`not defined`になってしまう
+  const findSearchBoxId = (urlString: string): string | undefined => {
+    const searchBoxId = searchBoxIdPattern
+      .find((pattern) => pattern.matcher(new URL(urlString)))?.id;
+
+    return searchBoxId;
+  };
+
+  const searchBoxId = findSearchBoxId(urlString);
+  if (!searchBoxId) {
+    return;
+  }
+
+  const searchBox = document.getElementById(searchBoxId);
+  searchBox?.focus();
+};
 export const focusSearchBox = async (): Promise<void> => {
   const [tab] = await chrome.tabs.query({
     active: true,
@@ -15,36 +61,3 @@ export const focusSearchBox = async (): Promise<void> => {
   });
 };
 
-const focus = (urlString: string): void => {
-  // スコープ外で定義すると`not defined`になる
-  const SearchBoxId = {
-    repoIssues: "repository-input",
-    repoPulls: "js-issues-search",
-    repoProjects: "project-search-input",
-  } as const;
-
-  const url = new URL(urlString);
-  let searchBoxId: string | null = null;
-
-  // <author>/<repository>/issues
-  if (url.pathname.endsWith("/issues")) {
-    searchBoxId = SearchBoxId.repoIssues;
-  }
-
-  // <author>/<repository>/pulls
-  if (url.pathname.endsWith("/pulls")) {
-    searchBoxId = SearchBoxId.repoPulls;
-  }
-
-  // <author>/<repository>/projects
-  if (url.pathname.endsWith("/projects")) {
-    searchBoxId = SearchBoxId.repoProjects;
-  }
-
-  if (!searchBoxId) {
-    return;
-  }
-
-  const searchBox = document.getElementById(searchBoxId);
-  searchBox?.focus();
-};
