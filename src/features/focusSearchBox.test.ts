@@ -161,13 +161,65 @@ describe("author profile tabs", () => {
   });
 });
 
-  describe("動作しないURLパターン", () => {
-    it("不正なURLの場合", () => {
-      focus("https://github.com/invalid/path");
-      assertOnlyElementFocused(null);
-    });
+describe("organization pages", () => {
+  it("should focus repository search in org repositories page", () => {
+    // Arrange
+    using ctx = createTestContext();
+    
+    // Act
+    focus("https://example.com/orgs/myorg/repositories");
+    
+    // Assert
+    ctx.assertOnlyElementFocused(ElementIds.orgRepositories);
+  });
 
-    it("要素が存在しない場合", () => {
+  it("should focus security overview search box", () => {
+    // Arrange
+    using ctx = createTestContext();
+    
+    // Act
+    focus("https://example.com/orgs/myorg/security/overview");
+    
+    // Assert
+    ctx.assertOnlyElementFocused(ElementIds.orgSecurityOverview);
+  });
+});
+
+describe("organization subnav pages", () => {
+  it("should focus subnav search for teams page", () => {
+    // Arrange
+    using ctx = createTestContext();
+    
+    // Act
+    focus("https://example.com/orgs/myorg/teams");
+    
+    // Assert
+    ctx.assertOnlyElementFocused(null, ClassNames.subnavSearch);
+  });
+
+  it("should focus subnav search for people page", () => {
+    // Arrange
+    using ctx = createTestContext();
+    
+    // Act
+    focus("https://example.com/orgs/myorg/people");
+    
+    // Assert
+    ctx.assertOnlyElementFocused(null, ClassNames.subnavSearch);
+  });
+
+  it("should focus subnav search for insights/dependencies page", () => {
+    // Arrange
+    using ctx = createTestContext();
+    
+    // Act
+    focus("https://example.com/orgs/myorg/insights/dependencies");
+    
+    // Assert
+    ctx.assertOnlyElementFocused(null, ClassNames.subnavSearch);
+  });
+});
+
 describe("error handling", () => {
   it("should handle invalid URL patterns gracefully", () => {
     // Arrange
