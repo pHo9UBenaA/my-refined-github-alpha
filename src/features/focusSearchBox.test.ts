@@ -23,12 +23,16 @@ const createMockElement = () => ({
 });
 
 const createMockDocument = () => {
-  const elements: Record<string, ReturnType<typeof createMockElement>> = Object.fromEntries(
-    getUniqueElementIds().map((id) => [id, createMockElement()]),
-  );
-  const classByElements: Record<string, ReturnType<typeof createMockElement>> = Object.fromEntries(
-    getUniqueClassNames().map((className) => [className, createMockElement()]),
-  );
+  const elements: Record<string, ReturnType<typeof createMockElement>> = Object
+    .fromEntries(
+      getUniqueElementIds().map((id) => [id, createMockElement()]),
+    );
+  const classByElements: Record<string, ReturnType<typeof createMockElement>> =
+    Object.fromEntries(
+      getUniqueClassNames().map((
+        className,
+      ) => [className, createMockElement()]),
+    );
 
   return {
     getElementById: (id: ElementId) => elements[id] || null,
@@ -55,7 +59,7 @@ const createTestContext = (): Disposable & {
       return [id, spy(element!, "focus")];
     }),
   );
-  
+
   const classSpies: Record<string, Spy> = Object.fromEntries(
     getUniqueClassNames().map((className) => {
       const element = mockDocument.querySelector(`.${className}`);
@@ -95,10 +99,10 @@ describe("repository pages", () => {
   it("should focus issues search box", () => {
     // Arrange
     using ctx = createTestContext();
-    
+
     // Act
     focus("https://example.com/user/repo/issues");
-    
+
     // Assert
     ctx.assertOnlyElementFocused(ElementIds.authorRepositoryIssues);
   });
@@ -106,10 +110,10 @@ describe("repository pages", () => {
   it("should focus pull requests search box", () => {
     // Arrange
     using ctx = createTestContext();
-    
+
     // Act
     focus("https://example.com/user/repo/pulls");
-    
+
     // Assert
     ctx.assertOnlyElementFocused(ElementIds.authorRepositoryPulls);
   });
@@ -117,10 +121,10 @@ describe("repository pages", () => {
   it("should focus projects search box", () => {
     // Arrange
     using ctx = createTestContext();
-    
+
     // Act
     focus("https://example.com/user/repo/projects");
-    
+
     // Assert
     ctx.assertOnlyElementFocused(ElementIds.authorRepositoryProjects);
   });
@@ -130,10 +134,10 @@ describe("author profile tabs", () => {
   it("should focus repositories tab search box", () => {
     // Arrange
     using ctx = createTestContext();
-    
+
     // Act
     focus("https://example.com/user?tab=repositories");
-    
+
     // Assert
     ctx.assertOnlyElementFocused(ElementIds.authorRepositories);
   });
@@ -141,10 +145,10 @@ describe("author profile tabs", () => {
   it("should focus projects tab search box", () => {
     // Arrange
     using ctx = createTestContext();
-    
+
     // Act
     focus("https://example.com/user?tab=projects");
-    
+
     // Assert
     ctx.assertOnlyElementFocused(ElementIds.authorProjects);
   });
@@ -152,10 +156,10 @@ describe("author profile tabs", () => {
   it("should focus stars tab search box", () => {
     // Arrange
     using ctx = createTestContext();
-    
+
     // Act
     focus("https://example.com/user?tab=stars");
-    
+
     // Assert
     ctx.assertOnlyElementFocused(ElementIds.authorStars);
   });
@@ -165,10 +169,10 @@ describe("organization pages", () => {
   it("should focus repository search in org repositories page", () => {
     // Arrange
     using ctx = createTestContext();
-    
+
     // Act
     focus("https://example.com/orgs/myorg/repositories");
-    
+
     // Assert
     ctx.assertOnlyElementFocused(ElementIds.orgRepositories);
   });
@@ -176,10 +180,10 @@ describe("organization pages", () => {
   it("should focus security overview search box", () => {
     // Arrange
     using ctx = createTestContext();
-    
+
     // Act
     focus("https://example.com/orgs/myorg/security/overview");
-    
+
     // Assert
     ctx.assertOnlyElementFocused(ElementIds.orgSecurityOverview);
   });
@@ -189,10 +193,10 @@ describe("organization subnav pages", () => {
   it("should focus subnav search for teams page", () => {
     // Arrange
     using ctx = createTestContext();
-    
+
     // Act
     focus("https://example.com/orgs/myorg/teams");
-    
+
     // Assert
     ctx.assertOnlyElementFocused(null, ClassNames.subnavSearch);
   });
@@ -200,10 +204,10 @@ describe("organization subnav pages", () => {
   it("should focus subnav search for people page", () => {
     // Arrange
     using ctx = createTestContext();
-    
+
     // Act
     focus("https://example.com/orgs/myorg/people");
-    
+
     // Assert
     ctx.assertOnlyElementFocused(null, ClassNames.subnavSearch);
   });
@@ -211,10 +215,10 @@ describe("organization subnav pages", () => {
   it("should focus subnav search for insights/dependencies page", () => {
     // Arrange
     using ctx = createTestContext();
-    
+
     // Act
     focus("https://example.com/orgs/myorg/insights/dependencies");
-    
+
     // Assert
     ctx.assertOnlyElementFocused(null, ClassNames.subnavSearch);
   });
@@ -224,10 +228,10 @@ describe("error handling", () => {
   it("should handle invalid URL patterns gracefully", () => {
     // Arrange
     using ctx = createTestContext();
-    
+
     // Act
     focus("https://example.com/invalid/path");
-    
+
     // Assert
     ctx.assertOnlyElementFocused(null);
   });
@@ -243,7 +247,7 @@ describe("error handling", () => {
 
       // Act
       focus("https://example.com/user/repo/issues");
-      
+
       // Assert
       // No assertions needed - just ensure no errors are thrown
     } finally {

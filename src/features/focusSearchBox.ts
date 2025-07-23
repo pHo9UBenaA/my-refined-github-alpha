@@ -1,7 +1,10 @@
 /// <reference types="@types/chrome" />
 
 // 値を参照してしまうと`not defined`になってしまうため取り急ぎ型情報のみ
-import { type ElementIds, type ClassNames } from "../constants/focusSearchBox.ts";
+import {
+  type ClassNames,
+  type ElementIds,
+} from "../constants/focusSearchBox.ts";
 
 type SearchBoxIdPattern = {
   matcher: (url: URL) => boolean;
@@ -50,12 +53,14 @@ const focus = (urlString: string): void => {
     },
     {
       // orgs/<org>/repositories
-      matcher: (url) => isOrgPath(url.pathname) && url.pathname.endsWith("/repositories"),
+      matcher: (url) =>
+        isOrgPath(url.pathname) && url.pathname.endsWith("/repositories"),
       id: "repos-list-filter-input",
     },
     {
       // orgs/<org>/security/overview
-      matcher: (url) => isOrgPath(url.pathname) && url.pathname.endsWith("/security/overview"),
+      matcher: (url) =>
+        isOrgPath(url.pathname) && url.pathname.endsWith("/security/overview"),
       id: "security-overview-page-filter-input",
     },
   ];
@@ -63,17 +68,21 @@ const focus = (urlString: string): void => {
   const searchBoxClassPattern: SearchBoxClassPattern[] = [
     {
       // orgs/<org>/teams
-      matcher: (url) => isOrgPath(url.pathname) && url.pathname.endsWith("/teams"),
+      matcher: (url) =>
+        isOrgPath(url.pathname) && url.pathname.endsWith("/teams"),
       className: "subnav-search-input",
     },
     {
       // orgs/<org>/people
-      matcher: (url) => isOrgPath(url.pathname) && url.pathname.endsWith("/people"),
+      matcher: (url) =>
+        isOrgPath(url.pathname) && url.pathname.endsWith("/people"),
       className: "subnav-search-input",
     },
     {
       // orgs/<org>/insights/dependencies
-      matcher: (url) => isOrgPath(url.pathname) && url.pathname.endsWith("/insights/dependencies"),
+      matcher: (url) =>
+        isOrgPath(url.pathname) &&
+        url.pathname.endsWith("/insights/dependencies"),
       className: "subnav-search-input",
     },
   ];
@@ -102,7 +111,9 @@ const focus = (urlString: string): void => {
 
   const searchBoxClass = findSearchBoxClass(urlString);
   if (searchBoxClass) {
-    const searchBox = document.querySelector<HTMLInputElement>(`.${searchBoxClass}`);
+    const searchBox = document.querySelector<HTMLInputElement>(
+      `.${searchBoxClass}`,
+    );
     searchBox?.focus();
     return;
   }
