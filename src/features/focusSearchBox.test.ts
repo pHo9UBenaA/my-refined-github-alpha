@@ -1,104 +1,165 @@
 /// <reference lib="deno.ns" />
 /// <reference types="@types/chrome" />
 
-import { afterEach, beforeEach, describe, it } from "@std/testing/bdd";
+import { describe, it } from "@std/testing/bdd";
 import { assertSpyCalls, type Spy, spy } from "@std/testing/mock";
 
+import { ClassNames, ElementIds } from "../constants/focusSearchBox.ts";
 import { __test__focus as focus } from "./focusSearchBox.ts";
-import { ElementIds } from "../constants/focusSearchBox.ts";
 
 type ElementId = (typeof ElementIds)[keyof typeof ElementIds];
+type ClassName = (typeof ClassNames)[keyof typeof ClassNames];
 
 const getUniqueElementIds = (): ElementId[] => {
   return [...new Set(Object.values(ElementIds))];
 };
 
-class MockElement {
-  focus = () => {};
-}
+const getUniqueClassNames = (): ClassName[] => {
+  return [...new Set(Object.values(ClassNames))];
+};
 
-class MockDocument {
-  private elements: Record<string, MockElement> = Object.fromEntries(
-    getUniqueElementIds().map((id) => [id, new MockElement()]),
+const createMockElement = () => ({
+  focus: () => {},
+});
+
+const createMockDocument = () => {
+  const elements: Record<string, ReturnType<typeof createMockElement>> = Object.fromEntries(
+    getUniqueElementIds().map((id) => [id, createMockElement()]),
+  );
+  const classByElements: Record<string, ReturnType<typeof createMockElement>> = Object.fromEntries(
+    getUniqueClassNames().map((className) => [className, createMockElement()]),
   );
 
-  getElementById(id: ElementId): MockElement | null {
-    return this.elements[id] || null;
-  }
-}
-
-const mockDocument = new MockDocument();
-globalThis.document = mockDocument as unknown as Document;
-
-describe("focus function", () => {
-  let elementSpies: Record<string, Spy> = {};
-
-  const getElementSpy = (id: ElementId): Disposable & { elementSpy: Spy } => {
-    const elementSpy = spy(mockDocument.getElementById(id)!, "focus");
-
-    return {
-      elementSpy,
-      [Symbol.dispose]: () => {
-        elementSpy.restore();
-      },
-    };
+  return {
+    getElementById: (id: ElementId) => elements[id] || null,
+    querySelector: (selector: string) => {
+      const className = selector.replace(".", "");
+      return classByElements[className] || null;
+    },
   };
+};
 
-  beforeEach(() => {
-    elementSpies = Object.fromEntries(
-      getUniqueElementIds().map((id) => {
-        return [id, getElementSpy(id).elementSpy];
-      }),
-    );
-  });
+const createTestContext = (): Disposable & {
+  assertOnlyElementFocused: (
+    expectedElementId: string | null,
+    expectedClassName?: string | null,
+  ) => void;
+} => {
+  const mockDocument = createMockDocument();
+  const originalDocument = globalThis.document;
+  globalThis.document = mockDocument as unknown as Document;
 
-  afterEach(() => {
-    // テスト後のクリーンアップ
-    Object.values(elementSpies).forEach((spy) => spy?.restore());
-  });
+  const elementSpies: Record<string, Spy> = Object.fromEntries(
+    getUniqueElementIds().map((id) => {
+      const element = mockDocument.getElementById(id);
+      return [id, spy(element!, "focus")];
+    }),
+  );
+  
+  const classSpies: Record<string, Spy> = Object.fromEntries(
+    getUniqueClassNames().map((className) => {
+      const element = mockDocument.querySelector(`.${className}`);
+      return [className, spy(element!, "focus")];
+    }),
+  );
 
-  const assertOnlyElementFocused = (expectedElementId: string | null) => {
+  const assertOnlyElementFocused = (
+    expectedElementId: string | null,
+    expectedClassName: string | null = null,
+  ) => {
     Object.values(ElementIds).forEach((elementId) => {
       assertSpyCalls(
         elementSpies[elementId],
         elementId === expectedElementId ? 1 : 0,
       );
     });
+    Object.values(ClassNames).forEach((className) => {
+      assertSpyCalls(
+        classSpies[className],
+        className === expectedClassName ? 1 : 0,
+      );
+    });
   };
 
-  describe("<author>/<repository>", () => {
-    it("issues pageで正しいIDの要素にフォーカスする", () => {
-      focus("https://github.com/user/repo/issues");
-      assertOnlyElementFocused(ElementIds.authorRepositoryIssues);
-    });
+  return {
+    assertOnlyElementFocused,
+    [Symbol.dispose]: () => {
+      Object.values(elementSpies).forEach((spy) => spy?.restore());
+      Object.values(classSpies).forEach((spy) => spy?.restore());
+      globalThis.document = originalDocument;
+    },
+  };
+};
 
-    it("pulls pageで正しいIDの要素にフォーカスする", () => {
-      focus("https://github.com/user/repo/pulls");
-      assertOnlyElementFocused(ElementIds.authorRepositoryPulls);
-    });
-
-    it("projects pageで正しいIDの要素にフォーカスする", () => {
-      focus("https://github.com/user/repo/projects");
-      assertOnlyElementFocused(ElementIds.authorRepositoryProjects);
-    });
+describe("repository pages", () => {
+  it("should focus issues search box", () => {
+    // Arrange
+    using ctx = createTestContext();
+    
+    // Act
+    focus("https://example.com/user/repo/issues");
+    
+    // Assert
+    ctx.assertOnlyElementFocused(ElementIds.authorRepositoryIssues);
   });
 
-  describe("<author>?params", () => {
-    it("repositories tabで正しいIDの要素にフォーカスする", () => {
-      focus("https://github.com/user?tab=repositories");
-      assertOnlyElementFocused(ElementIds.authorRepositories);
-    });
-
-    it("projects tabで正しいIDの要素にフォーカスする", () => {
-      focus("https://github.com/user?tab=projects");
-      assertOnlyElementFocused(ElementIds.authorProjects);
-    });
-
-    it("stars tabで正しいIDの要素にフォーカスする", () => {
-      focus("https://github.com/user?tab=stars");
-      assertOnlyElementFocused(ElementIds.authorStars);
-    });
+  it("should focus pull requests search box", () => {
+    // Arrange
+    using ctx = createTestContext();
+    
+    // Act
+    focus("https://example.com/user/repo/pulls");
+    
+    // Assert
+    ctx.assertOnlyElementFocused(ElementIds.authorRepositoryPulls);
   });
+
+  it("should focus projects search box", () => {
+    // Arrange
+    using ctx = createTestContext();
+    
+    // Act
+    focus("https://example.com/user/repo/projects");
+    
+    // Assert
+    ctx.assertOnlyElementFocused(ElementIds.authorRepositoryProjects);
+  });
+});
+
+describe("author profile tabs", () => {
+  it("should focus repositories tab search box", () => {
+    // Arrange
+    using ctx = createTestContext();
+    
+    // Act
+    focus("https://example.com/user?tab=repositories");
+    
+    // Assert
+    ctx.assertOnlyElementFocused(ElementIds.authorRepositories);
+  });
+
+  it("should focus projects tab search box", () => {
+    // Arrange
+    using ctx = createTestContext();
+    
+    // Act
+    focus("https://example.com/user?tab=projects");
+    
+    // Assert
+    ctx.assertOnlyElementFocused(ElementIds.authorProjects);
+  });
+
+  it("should focus stars tab search box", () => {
+    // Arrange
+    using ctx = createTestContext();
+    
+    // Act
+    focus("https://example.com/user?tab=stars");
+    
+    // Assert
+    ctx.assertOnlyElementFocused(ElementIds.authorStars);
+  });
+});
 
   describe("動作しないURLパターン", () => {
     it("不正なURLの場合", () => {
@@ -107,11 +168,34 @@ describe("focus function", () => {
     });
 
     it("要素が存在しない場合", () => {
+describe("error handling", () => {
+  it("should handle invalid URL patterns gracefully", () => {
+    // Arrange
+    using ctx = createTestContext();
+    
+    // Act
+    focus("https://example.com/invalid/path");
+    
+    // Assert
+    ctx.assertOnlyElementFocused(null);
+  });
+
+  it("should handle missing DOM elements gracefully", () => {
+    // Arrange
+    const originalDocument = globalThis.document;
+    try {
       globalThis.document = {
         getElementById: () => null,
+        querySelector: () => null,
       } as unknown as Document;
-      focus("https://github.com/user/repo/issues");
-      assertOnlyElementFocused(null);
-    });
+
+      // Act
+      focus("https://example.com/user/repo/issues");
+      
+      // Assert
+      // No assertions needed - just ensure no errors are thrown
+    } finally {
+      globalThis.document = originalDocument;
+    }
   });
 });
