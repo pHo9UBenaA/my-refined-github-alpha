@@ -1,15 +1,22 @@
 /// <reference types="@types/chrome" />
 
 // 値を参照してしまうと`not defined`になってしまうため取り急ぎ型情報のみ
-import { type ElementIds } from "../constants/focusSearchBox.ts";
+import { type ElementIds, type ClassNames } from "../constants/focusSearchBox.ts";
 
 type SearchBoxIdPattern = {
   matcher: (url: URL) => boolean;
   id: (typeof ElementIds)[keyof typeof ElementIds];
 };
 
+type SearchBoxClassPattern = {
+  matcher: (url: URL) => boolean;
+  className: (typeof ClassNames)[keyof typeof ClassNames];
+};
+
 const focus = (urlString: string): void => {
   // MEMO: スコープ外で定義すると`not defined`になってしまう
+  const isOrgPath = (pathname: string) => pathname.includes("/orgs/");
+
   const searchBoxIdPattern: SearchBoxIdPattern[] = [
     {
       // <author>/<repository>/issues
@@ -41,6 +48,34 @@ const focus = (urlString: string): void => {
       matcher: (url) => url.searchParams.get("tab") === "stars",
       id: "q",
     },
+    {
+      // orgs/<org>/repositories
+      matcher: (url) => isOrgPath(url.pathname) && url.pathname.endsWith("/repositories"),
+      id: "repos-list-filter-input",
+    },
+    {
+      // orgs/<org>/security/overview
+      matcher: (url) => isOrgPath(url.pathname) && url.pathname.endsWith("/security/overview"),
+      id: "security-overview-page-filter-input",
+    },
+  ];
+
+  const searchBoxClassPattern: SearchBoxClassPattern[] = [
+    {
+      // orgs/<org>/teams
+      matcher: (url) => isOrgPath(url.pathname) && url.pathname.endsWith("/teams"),
+      className: "subnav-search-input",
+    },
+    {
+      // orgs/<org>/people
+      matcher: (url) => isOrgPath(url.pathname) && url.pathname.endsWith("/people"),
+      className: "subnav-search-input",
+    },
+    {
+      // orgs/<org>/insights/dependencies
+      matcher: (url) => isOrgPath(url.pathname) && url.pathname.endsWith("/insights/dependencies"),
+      className: "subnav-search-input",
+    },
   ];
 
   // MEMO: スコープ外で定義すると`not defined`になってしまう
@@ -51,13 +86,26 @@ const focus = (urlString: string): void => {
     return searchBoxId;
   };
 
+  const findSearchBoxClass = (urlString: string): string | undefined => {
+    const searchBoxClass = searchBoxClassPattern
+      .find((pattern) => pattern.matcher(new URL(urlString)))?.className;
+
+    return searchBoxClass;
+  };
+
   const searchBoxId = findSearchBoxId(urlString);
-  if (!searchBoxId) {
+  if (searchBoxId) {
+    const searchBox = document.getElementById(searchBoxId);
+    searchBox?.focus();
     return;
   }
 
-  const searchBox = document.getElementById(searchBoxId);
-  searchBox?.focus();
+  const searchBoxClass = findSearchBoxClass(urlString);
+  if (searchBoxClass) {
+    const searchBox = document.querySelector<HTMLInputElement>(`.${searchBoxClass}`);
+    searchBox?.focus();
+    return;
+  }
 };
 
 const focusSearchBox = async (): Promise<void> => {
