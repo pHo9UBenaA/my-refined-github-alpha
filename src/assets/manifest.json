@@ -5,14 +5,6 @@
   "version": "0.2.0",
   "description": "Simplifies the GitHub interface and adds useful features",
   "author": "pHo9UBenaA",
-  "action": {
-    "default_icon": "icon.png"
-  },
-  "icons": {
-    "16": "icon.png",
-    "48": "icon.png",
-    "128": "icon.png"
-  },
   "background": {
     "service_worker": "background.js"
   },
